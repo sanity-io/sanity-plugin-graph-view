@@ -142,7 +142,7 @@ class Users {
   _users = []
 
   async getById(id) {
-    let user = this._users.find(u => u._id === id)
+    let user = this._users.find((u) => u._id === id)
     if (!user) {
       user = await client.users.getById(id)
       this._users.push(user)
@@ -175,15 +175,15 @@ class GraphData {
     }
 
     this.data = {
-      nodes: docs.map(d => Object.assign({id: d._id, type: 'document', doc: d})),
+      nodes: docs.map((d) => Object.assign({id: d._id, type: 'document', doc: d})),
       links: docs
-        .flatMap(doc => findRefs(doc).map(ref => ({source: doc._id, target: ref})))
-        .filter(link => docsById[link.source] && docsById[link.target])
+        .flatMap((doc) => findRefs(doc).map((ref) => ({source: doc._id, target: ref})))
+        .filter((link) => docsById[link.source] && docsById[link.target]),
     }
   }
 
   setEditSession(user, docNode) {
-    let session = this.sessions.find(s => s.user.id === user.id && s.doc._id === docNode.doc._id)
+    let session = this.sessions.find((s) => s.user.id === user.id && s.doc._id === docNode.doc._id)
     if (!session) {
       session = new EditSession()
       session.id = uuidv4()
@@ -209,7 +209,7 @@ class GraphData {
     Object.assign(copy, this)
     copy.data = {
       nodes: [...this.data.nodes],
-      links: [...this.data.links]
+      links: [...this.data.links],
     }
     return copy
   }
@@ -223,7 +223,7 @@ export function GraphTool() {
   const [docTypes, setDocTypes] = useState([])
   const [graph, setGraph] = useState(() => new GraphData())
 
-  const fetchCallback = useCallback(docs => {
+  const fetchCallback = useCallback((docs) => {
     docs = deduplicateDrafts(docs)
     setMaxSize(Math.max(...docs.map(sizeOf)))
     setDocuments(docs)
@@ -232,7 +232,7 @@ export function GraphTool() {
   }, [])
 
   const listenCallback = useCallback(
-    async update => {
+    async (update) => {
       const doc = update.result
       if (doc) {
         console.log('update for', doc)
@@ -246,7 +246,7 @@ export function GraphTool() {
 
         let oldDoc
         const docs = [...documents]
-        const idx = documents.findIndex(d => d._id === doc._id)
+        const idx = documents.findIndex((d) => d._id === doc._id)
         if (idx >= 0) {
           oldDoc = docs[idx]
           docs[idx] = doc
@@ -264,15 +264,15 @@ export function GraphTool() {
           if (!deepEqual(oldRefs, newRefs)) {
             graphChanged = true
             newGraph.data.links = newGraph.data.links
-              .filter(l => l.source.id !== doc._id)
-              .concat(newRefs.map(ref => ({source: doc._id, target: ref})))
+              .filter((l) => l.source.id !== doc._id)
+              .concat(newRefs.map((ref) => ({source: doc._id, target: ref})))
           }
         }
 
         setMaxSize(Math.max(...docs.map(sizeOf)))
 
         let docNode
-        const nodeIdx = graph.data.nodes.findIndex(n => n.doc && n.doc._id === doc._id)
+        const nodeIdx = graph.data.nodes.findIndex((n) => n.doc && n.doc._id === doc._id)
         if (nodeIdx >= 0) {
           docNode = graph.data.nodes[nodeIdx]
           docNode.doc = doc
@@ -305,9 +305,14 @@ export function GraphTool() {
   return (
     <div className={styles.root} style={{background: color.black.hex}}>
       <div className={styles.legend}>
-        {docTypes.map(docType => (
-          <div key={docType} style={{color: getDocTypeColor(docType).fill}}>
-            <span>●</span> {formatDocType(docType)}
+        {docTypes.map((docType) => (
+          <div
+            className={styles.legend__row}
+            key={docType}
+            style={{color: getDocTypeColor(docType).fill}}
+          >
+            <div className={styles.legend__badge} />
+            <div className={styles.legend__title}>{formatDocType(docType)}</div>
           </div>
         ))}
       </div>
@@ -318,14 +323,14 @@ export function GraphTool() {
         nodeAutoColorBy="group"
         numDimensions={2}
         enableNodeDrag={false}
-        onNodeHover={node => setHoverNode(node)}
+        onNodeHover={(node) => setHoverNode(node)}
         linkColor={() => rgba(color.gray[500].hex, 0.25)}
-        nodeLabel={node => labelFor(node.doc)}
+        nodeLabel={(node) => labelFor(node.doc)}
         nodeRelSize={1}
-        nodeVal={node => valueFor(node, maxSize)}
+        nodeVal={(node) => valueFor(node, maxSize)}
         onRenderFramePost={(ctx, globalScale) => {
           for (let session of graph.sessions) {
-            const node = graph.data.nodes.find(n => n.doc && n.doc._id === session.doc._id)
+            const node = graph.data.nodes.find((n) => n.doc && n.doc._id === session.doc._id)
             if (node) {
               const idleFactorRange = idleTimeout
 
@@ -445,7 +450,7 @@ function getDocTypeColor(docType) {
 
   colorCache[docType] = {
     fill: color[hue][400].hex,
-    border: rgba(color.black.hex, 0.5)
+    border: rgba(color.black.hex, 0.5),
   }
 
   return colorCache[docType]
