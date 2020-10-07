@@ -27,6 +27,20 @@ const QUERY = `
 const fadeEasing = BezierEasing(0, 0.9, 1, 1)
 const imageSize = 40
 
+function sortBy(array, f) {
+  return array.sort((a, b) => {
+    const va = f(a)
+    const vb = f(b)
+    return va < vb ? -1 : va > vb ? 1 : 0
+  })
+}
+
+function getTopDocTypes(counts) {
+  return sortBy(Object.keys(counts), (docType) => counts[docType] || 0)
+    .reverse()
+    .slice(0, 10)
+}
+
 function formatDocType(docType) {
   return (docType.substring(0, 1).toUpperCase() + docType.substring(1))
     .replace(/\./g, ' ')
@@ -42,12 +56,12 @@ function hashStringToInt(s) {
   return hash
 }
 
-function uniqueDocTypes(docs) {
+function getDocTypeCounts(docs) {
   const types = {}
   for (const doc of docs) {
-    types[doc._type] = true
+    types[doc._type] = (types[doc._type] || 0) + 1
   }
-  return Object.keys(types).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+  return types
 }
 
 function truncate(s, limit) {
@@ -227,7 +241,7 @@ export function GraphTool() {
     docs = deduplicateDrafts(docs)
     setMaxSize(Math.max(...docs.map(sizeOf)))
     setDocuments(docs)
-    setDocTypes(uniqueDocTypes(docs))
+    setDocTypes(getDocTypeCounts(docs))
     setGraph(new GraphData(docs))
   }, [])
 
@@ -235,8 +249,6 @@ export function GraphTool() {
     async (update) => {
       const doc = update.result
       if (doc) {
-        console.log('update for', doc)
-
         doc._id = stripDraftId(doc._id)
 
         let docsById = {}
@@ -254,18 +266,24 @@ export function GraphTool() {
           docs.push(doc)
         }
         setDocuments(docs)
-        setDocTypes(uniqueDocTypes(docs))
+        setDocTypes(getDocTypeCounts(docs))
 
         const newGraph = graph.clone()
         let graphChanged = false
         if (oldDoc) {
           const oldRefs = findRefs(oldDoc)
-          const newRefs = findRefs(doc) //.filter(l => docsById[l.source] && docsById[l.target])
+          const newRefs = findRefs(doc)
           if (!deepEqual(oldRefs, newRefs)) {
             graphChanged = true
             newGraph.data.links = newGraph.data.links
               .filter((l) => l.source.id !== doc._id)
               .concat(newRefs.map((ref) => ({source: doc._id, target: ref})))
+              .filter(
+                (link) =>
+                  link.source == doc._id ||
+                  link.target == doc._id ||
+                  (docsById[link.source] && docsById[link.target])
+              )
           }
         }
 
@@ -287,6 +305,20 @@ export function GraphTool() {
 
         const user = await users.getById(update.identity)
         graph.setEditSession(user, docNode)
+      } else if (update.transition === 'disappear') {
+        const docId = stripDraftId(update.documentId)
+
+        const docs = documents.filter((d) => d._id !== docId)
+        setDocuments(docs)
+        setDocTypes(getDocTypeCounts(docs))
+        setMaxSize(Math.max(...docs.map(sizeOf)))
+
+        const newGraph = graph.clone()
+        newGraph.data.links = newGraph.data.links.filter(
+          (l) => l.source.id !== docId && l.target.id !== docId
+        )
+        newGraph.data.nodes = newGraph.data.nodes.filter((n) => n.id !== docId)
+        setGraph(newGraph)
       }
     },
     [documents, graph]
@@ -305,7 +337,7 @@ export function GraphTool() {
   return (
     <div className={styles.root} style={{background: color.black.hex}}>
       <div className={styles.legend}>
-        {docTypes.map((docType) => (
+        {getTopDocTypes(docTypes).map((docType) => (
           <div
             className={styles.legend__row}
             key={docType}
