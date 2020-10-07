@@ -1,0 +1,29 @@
+@import 'part:@sanity/base/theme/variables-style';
+
+:root {
+  --border-style: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hoverNode {
+  display: none;
+  position: absolute;
+  bottom: var(--large-padding);
+  left: 50%;
+  transform: translate3d(-50%, 0, 0);
+  background: var(--component-bg);
+  border-radius: var(--border-radius-medium);
+  padding: var(--small-padding);
+  z-index: 1000;
+
+  @nest &:empty {
+    display: none;
+  }
+}

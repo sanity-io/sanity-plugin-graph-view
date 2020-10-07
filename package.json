@@ -1,0 +1,34 @@
+{
+  "name": "sanity-plugin-graph-tool",
+  "version": "1.0.0",
+  "main": "package.json",
+  "author": "Sanity.io <hello@sanity.io>",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel src -d lib --copy-files",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.11.6",
+    "@babel/core": "^7.11.6",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-transform-runtime": "^7.11.5",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-react": "^7.10.4",
+    "@babel/runtime": "^7.11.2",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.10.0",
+    "react": "^16.13.1"
+  },
+  "peerDependencies": {
+    "@sanity/client": ">= 0.135.x",
+    "@sanity/base": ">= 0.135.x",
+    "@sanity/components": ">= 0.135.x",
+    "@sanity/core": ">= 0.135.x",
+    "rxjs": ">= 6.1.0"
+  },
+  "bugs": {
+    "url": "https://github.com/sanity-io/sanity-plugin-graph-tool/issues"
+  },
+  "homepage": "https://github.com/sanity-io/sanity-plugin-graph-tool#readme"
+}
