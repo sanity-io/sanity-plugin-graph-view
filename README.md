@@ -1,8 +1,9 @@
-# sanity-plugin-graph-tool
-
-A tool for Sanity Studio to graph your content and see changes in real-time.
-
-![Screengrab of the Graph tool](assets/screengrab.gif)
+<div align="center">
+  <img src="assets/sanity-logo.png" width="177" alt="Sanity" />
+  <h1>sanity-plugin-graph-tool</h1>
+  <p>A tool for Sanity Studio to graph your content and see changes in real-time.</p>
+  <p><img src="assets/screengrab.gif" width="540" alt="Screengrab of the Graph tool" /></p>
+</div>
 
 Wonder how a visualization of your dataset will look? How many authors do you have? How many items have they worked on? And are currently working on! Edits and changes are shown in real-time! 
 
