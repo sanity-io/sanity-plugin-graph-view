@@ -1,18 +1,23 @@
 import {useUserColorManager} from '@sanity/base/user-color'
 import {color, COLOR_HUES} from '@sanity/color'
 import {rgba} from 'polished'
+import deepEqual from 'deep-equal'
 import React, {useCallback, useEffect, useState} from 'react'
 import client from 'part:@sanity/base/client'
 import {ForceGraph2D} from 'react-force-graph'
 import {v4 as uuidv4} from 'uuid'
 import BezierEasing from 'bezier-easing'
+
+// import styles from './GraphTool.css'
 import {useFetchDocuments, useListen} from './hooks'
+
 import styles from './GraphTool.css'
 
 const QUERY = `
   *[
     !(_id in path("_.*")) &&
     !(_type match "system.*") &&
+    !(_type match "mux.*") &&
     _type != "feedback" &&
     _type != "sanity.imageAsset"
   ]
@@ -37,7 +42,7 @@ function truncate(s, limit) {
 }
 
 function labelFor(doc) {
-  return doc.title || doc.name || doc._id
+  return `${doc.title || doc.name || doc._id}`
 }
 
 function valueFor(node, maxSize) {
@@ -53,8 +58,8 @@ function findRefs(obj, dest = []) {
   if (obj != null) {
     if (typeof obj === 'object') {
       for (const [k, v] of Object.entries(obj)) {
-        if (k === '_ref' && typeof v === 'string') {
-          dest.push(v)
+        if (k === '_ref' && typeof v === 'string' && v.length > 0) {
+          dest.push(stripDraftId(v))
         }
         findRefs(v, dest)
       }
@@ -88,7 +93,7 @@ function sizeOf(value) {
 }
 
 function loadImage(url) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let img = new Image(imageSize, imageSize)
     img.onload = () => {
       resolve(img)
@@ -97,11 +102,31 @@ function loadImage(url) {
   })
 }
 
+function stripDraftId(id) {
+  return id.replace(/^drafts\./, '')
+}
+
+function deduplicateDrafts(docs) {
+  let deduped = {}
+  for (let doc of docs) {
+    if (!/^drafts\./.test(doc._id)) {
+      deduped[doc._id] = doc
+    }
+  }
+  for (let doc of docs) {
+    if (/^drafts\./.test(doc._id)) {
+      const id = stripDraftId(doc._id)
+      deduped[id] = Object.assign(doc, {_id: id})
+    }
+  }
+  return Object.values(deduped)
+}
+
 class Users {
   _users = []
 
   async getById(id) {
-    let user = this._users.find((u) => u._id === id)
+    let user = this._users.find(u => u._id === id)
     if (!user) {
       user = await client.users.getById(id)
       this._users.push(user)
@@ -116,7 +141,7 @@ class Users {
 
 const users = new Users()
 
-const idleTimeout = 10000 // 3000
+const idleTimeout = 2000
 
 class EditSession {
   user = null
@@ -134,15 +159,15 @@ class GraphData {
     }
 
     this.data = {
-      nodes: docs.map((d) => Object.assign({id: d._id, type: 'document', doc: d})),
+      nodes: docs.map(d => Object.assign({id: d._id, type: 'document', doc: d})),
       links: docs
-        .flatMap((doc) => findRefs(doc).map((ref) => ({source: doc._id, target: ref})))
-        .filter((link) => docsById[link.source] && docsById[link.target]),
+        .flatMap(doc => findRefs(doc).map(ref => ({source: doc._id, target: ref})))
+        .filter(link => docsById[link.source] && docsById[link.target])
     }
   }
 
   setEditSession(user, docNode) {
-    let session = this.sessions.find((s) => s.user.id === user.id && s.doc._id === docNode.doc._id)
+    let session = this.sessions.find(s => s.user.id === user.id && s.doc._id === docNode.doc._id)
     if (!session) {
       session = new EditSession()
       session.id = uuidv4()
@@ -166,59 +191,90 @@ class GraphData {
   clone() {
     let copy = new GraphData()
     Object.assign(copy, this)
+    copy.data = {
+      nodes: [...this.data.nodes],
+      links: [...this.data.links]
+    }
     return copy
   }
 }
 
-export function GraphTool() {
+function GraphTool() {
   const userColorManager = useUserColorManager()
   const [maxSize, setMaxSize] = useState(0)
   const [hoverNode, setHoverNode] = useState(null)
   const [documents, setDocuments] = useState([])
   const [graph, setGraph] = useState(() => new GraphData())
 
-  const fetchCallback = useCallback((docs) => {
-    docs = docs.filter((d) => !/^drafts\./.test(d._id))
+  const fetchCallback = useCallback(docs => {
+    docs = deduplicateDrafts(docs)
     setMaxSize(Math.max(...docs.map(sizeOf)))
     setDocuments(docs)
     setGraph(new GraphData(docs))
   }, [])
 
   const listenCallback = useCallback(
-    async (update) => {
+    async update => {
       const doc = update.result
       if (doc) {
-        doc._id = doc._id.replace(/^drafts\./, '')
+        console.log('update for', doc)
 
-        const idx = documents.findIndex((d) => d._id === doc._id)
+        doc._id = stripDraftId(doc._id)
+
+        let docsById = {}
+        for (let doc of documents) {
+          docsById[doc._id] = doc
+        }
+
+        let oldDoc
+        const docs = [...documents]
+        const idx = documents.findIndex(d => d._id === doc._id)
         if (idx >= 0) {
-          const docs = [...documents]
+          oldDoc = docs[idx]
           docs[idx] = doc
-          setDocuments(docs)
+        } else {
+          docs.push(doc)
+        }
+        setDocuments(docs)
 
-          if (update.previous) {
-            // setMaxSize(maxSize - sizeOf(update.previous) + sizeOf(doc))
-            setMaxSize(docs.reduce((total, doc) => total + sizeOf(doc), 0))
-          }
-
-          // setGraph(graph.clone())
-
-          const nodeIdx = graph.data.nodes.findIndex((n) => n.doc && n.doc._id === doc._id)
-          if (nodeIdx >= 0) {
-            const docNode = graph.data.nodes[nodeIdx]
-            docNode.doc = doc
-
-            const user = await users.getById(update.identity)
-            graph.setEditSession(user, docNode)
+        const newGraph = graph.clone()
+        let graphChanged = false
+        if (oldDoc) {
+          const oldRefs = findRefs(oldDoc)
+          const newRefs = findRefs(doc) //.filter(l => docsById[l.source] && docsById[l.target])
+          if (!deepEqual(oldRefs, newRefs)) {
+            graphChanged = true
+            newGraph.data.links = newGraph.data.links
+              .filter(l => l.source.id !== doc._id)
+              .concat(newRefs.map(ref => ({source: doc._id, target: ref})))
           }
         }
+
+        setMaxSize(Math.max(...docs.map(sizeOf)))
+
+        let docNode
+        const nodeIdx = graph.data.nodes.findIndex(n => n.doc && n.doc._id === doc._id)
+        if (nodeIdx >= 0) {
+          docNode = graph.data.nodes[nodeIdx]
+          docNode.doc = doc
+        } else {
+          docNode = {id: doc._id, type: 'document', doc: doc}
+          newGraph.data.nodes.push(docNode)
+          graphChanged = true
+        }
+        if (graphChanged) {
+          setGraph(newGraph)
+        }
+
+        const user = await users.getById(update.identity)
+        graph.setEditSession(user, docNode)
       }
     },
     [documents, graph]
   )
 
   useFetchDocuments(QUERY, fetchCallback, [])
-  useListen(QUERY, {}, {includePreviousRevision: true}, listenCallback, [documents, graph])
+  useListen(QUERY, {}, {}, listenCallback, [documents, graph])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -236,14 +292,14 @@ export function GraphTool() {
         nodeAutoColorBy="group"
         numDimensions={2}
         enableNodeDrag={false}
-        onNodeHover={(node) => setHoverNode(node)}
+        onNodeHover={node => setHoverNode(node)}
         linkColor={() => rgba(color.gray[500].hex, 0.25)}
-        nodeLabel={(node) => labelFor(node.doc)}
+        nodeLabel={node => labelFor(node.doc)}
         nodeRelSize={1}
-        nodeVal={(node) => valueFor(node, maxSize)}
+        nodeVal={node => valueFor(node, maxSize)}
         onRenderFramePost={(ctx, globalScale) => {
           for (let session of graph.sessions) {
-            const node = graph.data.nodes.find((n) => n.doc && n.doc._id === session.doc._id)
+            const node = graph.data.nodes.find(n => n.doc && n.doc._id === session.doc._id)
             if (node) {
               const idleFactorRange = idleTimeout
 
@@ -321,9 +377,9 @@ export function GraphTool() {
             }
           }
         }}
-        nodeCanvasObject={(node, ctx) => {
+        nodeCanvasObject={(node, ctx, globalScale) => {
           switch (node.type) {
-            case 'document': {
+            case 'document':
               const nodeColor = getNodeColor(node)
               const radius = Math.sqrt(valueFor(node, maxSize))
 
@@ -334,7 +390,6 @@ export function GraphTool() {
               ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false)
               ctx.stroke()
               ctx.fill()
-            }
           }
         }}
         linkCanvasObject={(link, ctx, globalScale) => {
@@ -350,6 +405,8 @@ export function GraphTool() {
   )
 }
 
+export default GraphTool
+
 const colorCache = {}
 let typeColorNum = 0
 
@@ -364,7 +421,7 @@ function getNodeColor(node) {
 
   colorCache[node.doc._type] = {
     fill: color[hue][400].hex,
-    border: rgba(color.black.hex, 0.5),
+    border: rgba(color.black.hex, 0.5)
   }
 
   return colorCache[node.doc._type]
