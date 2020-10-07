@@ -24,6 +24,7 @@
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-react": "^7.10.4",
     "@babel/runtime": "^7.11.2",
+    "@sanity/base": "1.150.9-review-changes.1024",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.10.0",
     "eslint-config-prettier": "^6.12.0",
@@ -34,11 +35,8 @@
     "react": "^16.13.1"
   },
   "peerDependencies": {
-    "@sanity/base": ">= 0.135.x",
-    "@sanity/client": ">= 0.135.x",
-    "@sanity/components": ">= 0.135.x",
-    "@sanity/core": ">= 0.135.x",
-    "rxjs": ">= 6.1.0"
+    "@sanity/base": ">= 1.150.x",
+    "@sanity/client": ">= 1.150.x"
   },
   "bugs": {
     "url": "https://github.com/sanity-io/sanity-plugin-graph-tool/issues"
