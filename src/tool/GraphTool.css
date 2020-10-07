@@ -27,3 +27,14 @@
     display: none;
   }
 }
+
+.legend {
+  color: #888;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+
+  > div {
+    margin: 5px 0;
+  }
+}

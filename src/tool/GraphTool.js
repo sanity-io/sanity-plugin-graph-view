@@ -18,6 +18,7 @@ const QUERY = `
     !(_id in path("_.*")) &&
     !(_type match "system.*") &&
     !(_type match "mux.*") &&
+    !(_type match "workflow.*") &&
     _type != "feedback" &&
     _type != "sanity.imageAsset"
   ]
@@ -26,12 +27,27 @@ const QUERY = `
 const fadeEasing = BezierEasing(0, 0.9, 1, 1)
 const imageSize = 40
 
+function formatDocType(docType) {
+  return (docType.substring(0, 1).toUpperCase() + docType.substring(1))
+    .replace(/\./g, ' ')
+    .replace(/[A-Z]/g, ' $&')
+    .trim()
+}
+
 function hashStringToInt(s) {
   let hash = 0
   for (let i = 0; i < s.length; i++) {
     hash += s.charCodeAt(i)
   }
   return hash
+}
+
+function uniqueDocTypes(docs) {
+  const types = {}
+  for (const doc of docs) {
+    types[doc._type] = true
+  }
+  return Object.keys(types).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
 }
 
 function truncate(s, limit) {
@@ -204,12 +220,14 @@ function GraphTool() {
   const [maxSize, setMaxSize] = useState(0)
   const [hoverNode, setHoverNode] = useState(null)
   const [documents, setDocuments] = useState([])
+  const [docTypes, setDocTypes] = useState([])
   const [graph, setGraph] = useState(() => new GraphData())
 
   const fetchCallback = useCallback(docs => {
     docs = deduplicateDrafts(docs)
     setMaxSize(Math.max(...docs.map(sizeOf)))
     setDocuments(docs)
+    setDocTypes(uniqueDocTypes(docs))
     setGraph(new GraphData(docs))
   }, [])
 
@@ -236,6 +254,7 @@ function GraphTool() {
           docs.push(doc)
         }
         setDocuments(docs)
+        setDocTypes(uniqueDocTypes(docs))
 
         const newGraph = graph.clone()
         let graphChanged = false
@@ -285,6 +304,13 @@ function GraphTool() {
 
   return (
     <div className={styles.root} style={{background: color.black.hex}}>
+      <div className={styles.legend}>
+        {docTypes.map(docType => (
+          <div key={docType} style={{color: getDocTypeColor(docType).fill}}>
+            <span>●</span> {formatDocType(docType)}
+          </div>
+        ))}
+      </div>
       {hoverNode && <div className={styles.hoverNode}>{labelFor(hoverNode.doc)}</div>}
 
       <ForceGraph2D
@@ -380,7 +406,7 @@ function GraphTool() {
         nodeCanvasObject={(node, ctx, globalScale) => {
           switch (node.type) {
             case 'document':
-              const nodeColor = getNodeColor(node)
+              const nodeColor = getDocTypeColor(node.doc._type)
               const radius = Math.sqrt(valueFor(node, maxSize))
 
               ctx.beginPath()
@@ -410,19 +436,19 @@ export default GraphTool
 const colorCache = {}
 let typeColorNum = 0
 
-function getNodeColor(node) {
-  if (colorCache[node.doc._type]) {
-    return colorCache[node.doc._type]
+function getDocTypeColor(docType) {
+  if (colorCache[docType]) {
+    return colorCache[docType]
   }
 
   const hue = COLOR_HUES[typeColorNum % COLOR_HUES.length]
 
   typeColorNum += 1
 
-  colorCache[node.doc._type] = {
+  colorCache[docType] = {
     fill: color[hue][400].hex,
     border: rgba(color.black.hex, 0.5)
   }
 
-  return colorCache[node.doc._type]
+  return colorCache[docType]
 }
