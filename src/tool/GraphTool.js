@@ -6,10 +6,7 @@ import client from 'part:@sanity/base/client'
 import {ForceGraph2D} from 'react-force-graph'
 import {v4 as uuidv4} from 'uuid'
 import BezierEasing from 'bezier-easing'
-
-// import styles from './GraphTool.css'
 import {useFetchDocuments, useListen} from './hooks'
-
 import styles from './GraphTool.css'
 
 const QUERY = `
