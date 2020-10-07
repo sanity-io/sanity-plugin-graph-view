@@ -157,7 +157,7 @@ class Users {
 
 const users = new Users()
 
-const idleTimeout = 2000
+const idleTimeout = 10000
 
 class EditSession {
   user = null
