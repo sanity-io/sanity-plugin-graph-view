@@ -215,7 +215,7 @@ class GraphData {
   }
 }
 
-function GraphTool() {
+export function GraphTool() {
   const userColorManager = useUserColorManager()
   const [maxSize, setMaxSize] = useState(0)
   const [hoverNode, setHoverNode] = useState(null)
@@ -430,8 +430,6 @@ function GraphTool() {
     </div>
   )
 }
-
-export default GraphTool
 
 const colorCache = {}
 let typeColorNum = 0
