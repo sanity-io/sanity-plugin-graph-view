@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "babel src -d lib --copy-files",
+    "lint": "eslint .",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -25,11 +26,16 @@
     "@babel/runtime": "^7.11.2",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.10.0",
+    "eslint-config-prettier": "^6.12.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-react": "^7.21.3",
+    "eslint-plugin-react-hooks": "^4.1.2",
+    "prettier": "^2.1.2",
     "react": "^16.13.1"
   },
   "peerDependencies": {
-    "@sanity/client": ">= 0.135.x",
     "@sanity/base": ">= 0.135.x",
+    "@sanity/client": ">= 0.135.x",
     "@sanity/components": ">= 0.135.x",
     "@sanity/core": ">= 0.135.x",
     "rxjs": ">= 6.1.0"

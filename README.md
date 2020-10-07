@@ -22,6 +22,9 @@ yarn link
 
 # In a development Studio directory:
 yarn link sanity-plugin-graph-tool
+
+# Lint your code before committing
+yarn lint
 ```
 
 ## Get help in the Sanity Community
