@@ -72,16 +72,11 @@ function truncate(s, limit) {
 }
 
 function labelFor(doc) {
-  return `${doc.title || doc.name || doc._id}`
+  return `${doc.title || doc.name || doc._id}`.trim()
 }
 
 function valueFor(node, maxSize) {
-  switch (node.type) {
-    case 'session':
-      return 5
-    default:
-      return 5 + 100 * (sizeOf(node) / maxSize)
-  }
+  return 5 + 100 * (sizeOf(node.doc) / maxSize)
 }
 
 function findRefs(obj, dest = []) {
@@ -123,7 +118,7 @@ function sizeOf(value) {
 }
 
 function loadImage(url) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let img = new Image(imageSize, imageSize)
     img.onload = () => {
       resolve(img)
@@ -227,6 +222,39 @@ class GraphData {
     }
     return copy
   }
+}
+
+function drawTooltip(ctx, globalScale, node, value) {
+  const fontSize = Math.max(1, Math.min(30, Math.round(12 / globalScale)))
+
+  ctx.save()
+  ctx.font = `${fontSize}px sans-serif`
+
+  const nodeRadius = Math.sqrt(value) * globalScale
+  const label = labelFor(node.doc)
+  const textMetrics = ctx.measureText(label)
+  const nodeMarginX = (15 + nodeRadius) / globalScale
+  const labelMarginY = 5 / globalScale
+  const w = textMetrics.width + nodeMarginX
+
+  ctx.beginPath()
+  ctx.fillStyle = rgba(color.white.hex, 1.0)
+  ctx.arc(node.x, node.y, 3 / globalScale, 0, 2 * Math.PI, false)
+  ctx.fill()
+
+  ctx.beginPath()
+  ctx.strokeStyle = rgba(color.white.hex, 1.0)
+  ctx.lineWidth = 1 / globalScale
+  ctx.moveTo(node.x, node.y)
+  ctx.lineTo(node.x + w, node.y)
+  ctx.stroke()
+
+  ctx.fillStyle = rgba(color.white.hex, 1.0)
+  ctx.textAlign = 'right'
+  ctx.textBaseline = 'bottom'
+  ctx.fillText(label, node.x + w, node.y - labelMarginY)
+
+  ctx.restore()
 }
 
 export function GraphTool() {
@@ -357,10 +385,14 @@ export function GraphTool() {
         enableNodeDrag={false}
         onNodeHover={(node) => setHoverNode(node)}
         linkColor={() => rgba(color.gray[500].hex, 0.25)}
-        nodeLabel={(node) => labelFor(node.doc)}
+        nodeLabel={() => null}
         nodeRelSize={1}
         nodeVal={(node) => valueFor(node, maxSize)}
         onRenderFramePost={(ctx, globalScale) => {
+          if (hoverNode) {
+            drawTooltip(ctx, globalScale, hoverNode, valueFor(hoverNode, maxSize))
+          }
+
           for (let session of graph.sessions) {
             const node = graph.data.nodes.find((n) => n.doc && n.doc._id === session.doc._id)
             if (node) {
@@ -440,9 +472,9 @@ export function GraphTool() {
             }
           }
         }}
-        nodeCanvasObject={(node, ctx, globalScale) => {
+        nodeCanvasObject={(node, ctx) => {
           switch (node.type) {
-            case 'document':
+            case 'document': {
               const nodeColor = getDocTypeColor(node.doc._type)
               const radius = Math.sqrt(valueFor(node, maxSize))
 
@@ -453,6 +485,7 @@ export function GraphTool() {
               ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false)
               ctx.stroke()
               ctx.fill()
+            }
           }
         }}
         linkCanvasObject={(link, ctx, globalScale) => {
