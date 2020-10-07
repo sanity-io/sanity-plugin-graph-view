@@ -156,9 +156,10 @@ class Users {
       user = await client.users.getById(id)
       this._users.push(user)
 
-      if (user.imageUrl) {
-        user.image = await loadImage(user.imageUrl)
-      }
+      user.image = await loadImage(
+        user.imageUrl ||
+          'https://concernedchristianmen.org/wp-content/uploads/2016/11/head-silhouette.jpg'
+      )
     }
     return user
   }
@@ -224,6 +225,8 @@ class GraphData {
   }
 }
 
+let frameCounter = 0
+
 function drawTooltip(ctx, globalScale, node, value) {
   const fontSize = Math.max(1, Math.min(30, Math.round(12 / globalScale)))
 
@@ -275,6 +278,8 @@ export function GraphTool() {
 
   const listenCallback = useCallback(
     async (update) => {
+      console.log('Update:', update)
+
       const doc = update.result
       if (doc) {
         doc._id = stripDraftId(doc._id)
@@ -295,27 +300,22 @@ export function GraphTool() {
         }
         setDocuments(docs)
         setDocTypes(getDocTypeCounts(docs))
+        setMaxSize(Math.max(...docs.map(sizeOf)))
 
         const newGraph = graph.clone()
         let graphChanged = false
-        if (oldDoc) {
-          const oldRefs = findRefs(oldDoc)
-          const newRefs = findRefs(doc)
-          if (!deepEqual(oldRefs, newRefs)) {
-            graphChanged = true
-            newGraph.data.links = newGraph.data.links
-              .filter((l) => l.source.id !== doc._id)
-              .concat(newRefs.map((ref) => ({source: doc._id, target: ref})))
-              .filter(
-                (link) =>
-                  link.source == doc._id ||
-                  link.target == doc._id ||
-                  (docsById[link.source] && docsById[link.target])
-              )
-          }
-        }
 
-        setMaxSize(Math.max(...docs.map(sizeOf)))
+        const oldRefs = findRefs(oldDoc || {}).filter(
+          (id) => id === doc._id || docsById[id] != null
+        )
+        const newRefs = findRefs(doc).filter((id) => id === doc._id || docsById[id] != null)
+
+        if (!deepEqual(oldRefs, newRefs)) {
+          graphChanged = true
+          newGraph.data.links = newGraph.data.links
+            .filter((l) => l.source.id !== doc._id)
+            .concat(newRefs.map((ref) => ({source: doc._id, target: ref})))
+        }
 
         let docNode
         const nodeIdx = graph.data.nodes.findIndex((n) => n.doc && n.doc._id === doc._id)
@@ -389,6 +389,8 @@ export function GraphTool() {
         nodeRelSize={1}
         nodeVal={(node) => valueFor(node, maxSize)}
         onRenderFramePost={(ctx, globalScale) => {
+          const frame = frameCounter++
+
           if (hoverNode) {
             drawTooltip(ctx, globalScale, hoverNode, valueFor(hoverNode, maxSize))
           }
@@ -414,10 +416,11 @@ export function GraphTool() {
               const x = orient ? node.x - w : node.x + labelMarginY
               const y = node.y
               const image = session.user.image
-              const imgW = image.width / globalScale
-              const imgH = image.height / globalScale
+              const imgW = image ? image.width / globalScale : 0
+              const imgH = image ? image.height / globalScale : 0
               const imgX = orient ? x - imgW - imgMargin : x + w + imgMargin
               const imgY = y - imgH * 0.7
+              const radius = Math.sqrt(valueFor(node, maxSize)) * globalScale
 
               ctx.beginPath()
               ctx.strokeStyle = rgba(color.white.hex, 1.0)
@@ -443,24 +446,37 @@ export function GraphTool() {
               }
 
               ctx.beginPath()
-              ctx.fillStyle = rgba(color.white.hex, 1.0)
-              ctx.arc(node.x, node.y, 3 / globalScale, 0, 2 * Math.PI, false)
+              ctx.fillStyle = rgba(
+                color.white.hex,
+                Math.max(0.5 + Math.sin((frame / 20) % Math.PI) * 0.5, 0)
+              )
+              ctx.arc(
+                node.x,
+                node.y,
+                Math.max(radius * 0.5 + Math.sin((frame / 20) % Math.PI) * 2, 1) / globalScale,
+                0,
+                2 * Math.PI,
+                false
+              )
               ctx.fill()
 
-              ctx.save()
-              ctx.beginPath()
-              ctx.fillStyle = rgba(color.white.hex, 1.0)
-              ctx.arc(imgX + imgW / 2, imgY + imgH / 2, imgW / 2, 0, 2 * Math.PI, false)
-              ctx.clip()
-              ctx.drawImage(image, imgX, imgY, imgW, imgH)
-              ctx.strokeStyle = color.black.hex
-              ctx.lineWidth = 5 / globalScale
-              ctx.stroke()
-              ctx.strokeStyle = userColorManager.get(session.user.id).tints[400].hex
-              ctx.lineWidth = 4 / globalScale
-              ctx.stroke()
+              if (image) {
+                ctx.save()
+                ctx.beginPath()
+                ctx.fillStyle = rgba(color.white.hex, 1.0)
+                ctx.arc(imgX + imgW / 2, imgY + imgH / 2, imgW / 2, 0, 2 * Math.PI, false)
+                ctx.clip()
 
-              ctx.restore()
+                ctx.drawImage(image, imgX, imgY, imgW, imgH)
+
+                ctx.strokeStyle = color.black.hex
+                ctx.lineWidth = 5 / globalScale
+                ctx.stroke()
+                ctx.strokeStyle = userColorManager.get(session.user.id).tints[400].hex
+                ctx.lineWidth = 4 / globalScale
+                ctx.stroke()
+                ctx.restore()
+              }
 
               ctx.beginPath()
               ctx.strokeStyle = rgba(color.black.hex, 1)
