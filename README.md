@@ -2,6 +2,12 @@
 
 A tool for Sanity Studio to graph your content and see changes in real-time.
 
+![Screengrab of the Graph tool](assets/screengrab.gif)
+
+Wonder how a visualization of your dataset will look? How many authors do you have? How many items have they worked on? And are currently working on! Edits and changes are shown in real-time! 
+
+**Explore your data with this plugin, seek out strange corners and data types, boldly go where you could not before!**
+
 ```sh
 # In your Sanity Studio repository:
 sanity install graph-tool
