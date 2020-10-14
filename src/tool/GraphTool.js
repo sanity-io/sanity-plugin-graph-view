@@ -580,6 +580,11 @@ export function GraphTool() {
                     // ctx.fillStyle = rgba(color.white.hex, 1.0)
                     ctx.textAlign = 'center'
                     ctx.textBaseline = 'top'
+
+                    ctx.strokeStyle = rgba(color.black.hex, 0.5)
+                    ctx.lineWidth = 2 / globalScale
+                    ctx.strokeText(label, node.x, node.y + radius + 5 / globalScale)
+
                     ctx.fillText(label, node.x, node.y + radius + 5 / globalScale)
                     break
                   }
