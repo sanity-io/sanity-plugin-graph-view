@@ -458,17 +458,15 @@ export function GraphTool() {
 
               const angle = session.angle
               const label = truncate(labelFor(session.doc), 30)
-              const textMetrics = ctx.measureText(label)
               const radius = Math.sqrt(valueFor(node.doc, maxSize))
               const image = session.user.image
               const userColor = userColorManager.get(session.user.displayName).tints[400].hex
-              const distance = radius + 40
-
-              const x = node.x + Math.sin(angle) * (distance / globalScale)
-              const y = node.y + Math.cos(angle) * (distance / globalScale)
-
+              const distance = radius * globalScale + 40
               const imgW = image ? image.width : 0
               const imgH = image ? image.height : 0
+
+              const x = node.x + (Math.sin(angle) * distance) / globalScale
+              const y = node.y + (Math.cos(angle) * distance) / globalScale
 
               ctx.beginPath()
               ctx.strokeStyle = rgba(color.white.hex, 1.0)
@@ -479,17 +477,6 @@ export function GraphTool() {
               )
               ctx.lineTo(node.x + Math.sin(angle) * radius, node.y + Math.cos(angle) * radius)
               ctx.stroke()
-
-              // if (session.doc) {
-              //   ctx.fillStyle = rgba(color.white.hex, 1.0)
-              //   ctx.textAlign = 'left'
-              //   ctx.textBaseline = 'bottom'
-              //   if (orient) {
-              //     ctx.fillText(label, x, y - labelMarginY, w)
-              //   } else {
-              //     ctx.fillText(label, x + w - textMetrics.width, y - labelMarginY, w)
-              //   }
-              // }
 
               ctx.beginPath()
               ctx.strokeStyle = rgba(color.white.hex, 1.0)
