@@ -7,6 +7,7 @@ import client from 'part:@sanity/base/client'
 import {ForceGraph2D} from 'react-force-graph'
 import {v4 as uuidv4} from 'uuid'
 import BezierEasing from 'bezier-easing'
+import {useRouter} from 'part:@sanity/base/router'
 
 import {useFetchDocuments, useListen} from './hooks'
 import styles from './GraphTool.css'
@@ -35,7 +36,7 @@ function sortBy(array, f) {
 }
 
 function getTopDocTypes(counts) {
-  return sortBy(Object.keys(counts), docType => counts[docType] || 0)
+  return sortBy(Object.keys(counts), (docType) => counts[docType] || 0)
     .reverse()
     .slice(0, 10)
 }
@@ -45,14 +46,6 @@ function formatDocType(docType) {
     .replace(/\./g, ' ')
     .replace(/[A-Z]/g, ' $&')
     .trim()
-}
-
-function hashStringToInt(s) {
-  let hash = 0
-  for (let i = 0; i < s.length; i++) {
-    hash += s.charCodeAt(i)
-  }
-  return hash
 }
 
 function getDocTypeCounts(docs) {
@@ -117,12 +110,12 @@ function sizeOf(value) {
 }
 
 function loadImage(url) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     let img = new Image(imageSize, imageSize)
     img.onload = () => {
       resolve(img)
     }
-    img.onerror = event => {
+    img.onerror = (event) => {
       console.log('Image error', event)
       resolve(null)
     }
@@ -154,7 +147,7 @@ class Users {
   _users = []
 
   async getById(id) {
-    let user = this._users.find(u => u._id === id)
+    let user = this._users.find((u) => u._id === id)
     if (!user) {
       user = await client.users.getById(id)
 
@@ -181,38 +174,38 @@ const robotUsers = [
   {
     displayName: 'Ole',
     imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/a7e0a0a03a59cccfd06d3bcdb5df71b75401bd28-1024x1024.png?w=80&h=80&fit=crop'
+      'https://cdn.sanity.io/images/ze41ydzg/production/a7e0a0a03a59cccfd06d3bcdb5df71b75401bd28-1024x1024.png?w=80&h=80&fit=crop',
   },
   {
     displayName: 'Jan-Tore',
     imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/a79906968185c6e8a3658bcca42a79433222cc3e-1024x1024.png?w=80&h=80&fit=crop'
+      'https://cdn.sanity.io/images/ze41ydzg/production/a79906968185c6e8a3658bcca42a79433222cc3e-1024x1024.png?w=80&h=80&fit=crop',
   },
   {
     displayName: 'Stein',
     imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/e579ed13f214ccc1e158ed42f46a30935afeb9e0-1024x1024.png?w=80&h=80&fit=crop'
+      'https://cdn.sanity.io/images/ze41ydzg/production/e579ed13f214ccc1e158ed42f46a30935afeb9e0-1024x1024.png?w=80&h=80&fit=crop',
   },
   {
     displayName: 'Elvis',
     imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/be36eb26194cb3ae3e218b1cf01d7c6c3425cf65-1024x1024.png?w=80&h=80&fit=crop'
+      'https://cdn.sanity.io/images/ze41ydzg/production/be36eb26194cb3ae3e218b1cf01d7c6c3425cf65-1024x1024.png?w=80&h=80&fit=crop',
   },
   {
     displayName: 'Amanda',
     imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/88e1da4f85f95856c9736aa4637e2bbf48ed6773-1024x1024.png?w=80&h=80&fit=crop'
+      'https://cdn.sanity.io/images/ze41ydzg/production/88e1da4f85f95856c9736aa4637e2bbf48ed6773-1024x1024.png?w=80&h=80&fit=crop',
   },
   {
     displayName: 'Reidun',
     imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/a79906968185c6e8a3658bcca42a79433222cc3e-1024x1024.png?w=80&h=80&fit=crop'
+      'https://cdn.sanity.io/images/ze41ydzg/production/a79906968185c6e8a3658bcca42a79433222cc3e-1024x1024.png?w=80&h=80&fit=crop',
   },
   {
     displayName: 'Tina',
     imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/6f6df5d7cc72f13988ad05ee026b567985bf1cf2-1024x1024.png?w=80&h=80&fit=crop'
-  }
+      'https://cdn.sanity.io/images/ze41ydzg/production/6f6df5d7cc72f13988ad05ee026b567985bf1cf2-1024x1024.png?w=80&h=80&fit=crop',
+  },
 ]
 
 class EditSession {
@@ -231,15 +224,15 @@ class GraphData {
     }
 
     this.data = {
-      nodes: docs.map(d => Object.assign({id: d._id, type: 'document', doc: d})),
+      nodes: docs.map((d) => Object.assign({id: d._id, type: 'document', doc: d})),
       links: docs
-        .flatMap(doc => findRefs(doc).map(ref => ({source: doc._id, target: ref})))
-        .filter(link => docsById[link.source] && docsById[link.target])
+        .flatMap((doc) => findRefs(doc).map((ref) => ({source: doc._id, target: ref})))
+        .filter((link) => docsById[link.source] && docsById[link.target]),
     }
   }
 
   setEditSession(user, docNode) {
-    let session = this.sessions.find(s => s.user.id === user.id && s.doc._id === docNode.doc._id)
+    let session = this.sessions.find((s) => s.user.id === user.id && s.doc._id === docNode.doc._id)
     if (!session) {
       session = new EditSession()
       session.id = uuidv4()
@@ -267,45 +260,10 @@ class GraphData {
     Object.assign(copy, this)
     copy.data = {
       nodes: [...this.data.nodes],
-      links: [...this.data.links]
+      links: [...this.data.links],
     }
     return copy
   }
-}
-
-let frameCounter = 0
-
-function drawTooltip(ctx, globalScale, node, value) {
-  const fontSize = Math.max(1, Math.min(30, Math.round(12 / globalScale)))
-
-  ctx.save()
-  ctx.font = `${fontSize}px sans-serif`
-
-  const nodeRadius = Math.sqrt(value) * globalScale
-  const label = labelFor(node.doc)
-  const textMetrics = ctx.measureText(label)
-  const nodeMarginX = (15 + nodeRadius) / globalScale
-  const labelMarginY = 5 / globalScale
-  const w = textMetrics.width + nodeMarginX
-
-  ctx.beginPath()
-  ctx.fillStyle = rgba(color.white.hex, 1.0)
-  ctx.arc(node.x, node.y, 3 / globalScale, 0, 2 * Math.PI, false)
-  ctx.fill()
-
-  ctx.beginPath()
-  ctx.strokeStyle = rgba(color.white.hex, 1.0)
-  ctx.lineWidth = 1 / globalScale
-  ctx.moveTo(node.x, node.y)
-  ctx.lineTo(node.x + w, node.y)
-  ctx.stroke()
-
-  ctx.fillStyle = rgba(color.white.hex, 1.0)
-  ctx.textAlign = 'right'
-  ctx.textBaseline = 'bottom'
-  ctx.fillText(label, node.x + w, node.y - labelMarginY)
-
-  ctx.restore()
 }
 
 export function GraphTool() {
@@ -315,8 +273,9 @@ export function GraphTool() {
   const [documents, setDocuments] = useState([])
   const [docTypes, setDocTypes] = useState([])
   const [graph, setGraph] = useState(() => new GraphData())
+  const router = useRouter()
 
-  const fetchCallback = useCallback(docs => {
+  const fetchCallback = useCallback((docs) => {
     docs = deduplicateDrafts(docs)
     setMaxSize(Math.max(...docs.map(sizeOf)))
     setDocuments(docs)
@@ -325,7 +284,7 @@ export function GraphTool() {
   }, [])
 
   const listenCallback = useCallback(
-    async update => {
+    async (update) => {
       console.log('Update:', update)
 
       const doc = update.result
@@ -339,7 +298,7 @@ export function GraphTool() {
 
         let oldDoc
         const docs = [...documents]
-        const idx = documents.findIndex(d => d._id === doc._id)
+        const idx = documents.findIndex((d) => d._id === doc._id)
         if (idx >= 0) {
           oldDoc = docs[idx]
           docs[idx] = doc
@@ -353,18 +312,20 @@ export function GraphTool() {
         const newGraph = graph.clone()
         let graphChanged = false
 
-        const oldRefs = findRefs(oldDoc || {}).filter(id => id === doc._id || docsById[id] != null)
-        const newRefs = findRefs(doc).filter(id => id === doc._id || docsById[id] != null)
+        const oldRefs = findRefs(oldDoc || {}).filter(
+          (id) => id === doc._id || docsById[id] != null
+        )
+        const newRefs = findRefs(doc).filter((id) => id === doc._id || docsById[id] != null)
 
         if (!deepEqual(oldRefs, newRefs)) {
           graphChanged = true
           newGraph.data.links = newGraph.data.links
-            .filter(l => l.source.id !== doc._id)
-            .concat(newRefs.map(ref => ({source: doc._id, target: ref})))
+            .filter((l) => l.source.id !== doc._id)
+            .concat(newRefs.map((ref) => ({source: doc._id, target: ref})))
         }
 
         let docNode
-        const nodeIdx = graph.data.nodes.findIndex(n => n.doc && n.doc._id === doc._id)
+        const nodeIdx = graph.data.nodes.findIndex((n) => n.doc && n.doc._id === doc._id)
         if (nodeIdx >= 0) {
           docNode = graph.data.nodes[nodeIdx]
           docNode.doc = doc
@@ -382,16 +343,16 @@ export function GraphTool() {
       } else if (update.transition === 'disappear') {
         const docId = stripDraftId(update.documentId)
 
-        const docs = documents.filter(d => d._id !== docId)
+        const docs = documents.filter((d) => d._id !== docId)
         setDocuments(docs)
         setDocTypes(getDocTypeCounts(docs))
         setMaxSize(Math.max(...docs.map(sizeOf)))
 
         const newGraph = graph.clone()
         newGraph.data.links = newGraph.data.links.filter(
-          l => l.source.id !== docId && l.target.id !== docId
+          (l) => l.source.id !== docId && l.target.id !== docId
         )
-        newGraph.data.nodes = newGraph.data.nodes.filter(n => n.id !== docId)
+        newGraph.data.nodes = newGraph.data.nodes.filter((n) => n.id !== docId)
         setGraph(newGraph)
       }
     },
@@ -411,7 +372,7 @@ export function GraphTool() {
   return (
     <div className={styles.root} style={{background: color.black.hex}}>
       <div className={styles.legend}>
-        {getTopDocTypes(docTypes).map(docType => (
+        {getTopDocTypes(docTypes).map((docType) => (
           <div
             className={styles.legend__row}
             key={docType}
@@ -429,24 +390,17 @@ export function GraphTool() {
         nodeAutoColorBy="group"
         numDimensions={2}
         enableNodeDrag={false}
-        onNodeHover={node => setHoverNode(node)}
-        onNodeClick={node => {
-          console.log('Click', node)
-          //window.location.href = `/desk/blog;publishedPosts;f4a58dd5-a8e7-4789-ad10-6855fa006452`
+        onNodeHover={(node) => setHoverNode(node)}
+        onNodeClick={(node) => {
+          router.navigateIntent('edit', {id: node.doc._id, documentType: node.doc._type})
         }}
         linkColor={() => rgba(color.gray[500].hex, 0.25)}
         nodeLabel={() => null}
         nodeRelSize={1}
-        nodeVal={node => valueFor(node.doc, maxSize)}
+        nodeVal={(node) => valueFor(node.doc, maxSize)}
         onRenderFramePost={(ctx, globalScale) => {
-          const frame = frameCounter++
-
-          if (hoverNode) {
-            // drawTooltip(ctx, globalScale, hoverNode, valueFor(hoverNode.doc, maxSize))
-          }
-
           for (let session of graph.sessions) {
-            const node = graph.data.nodes.find(n => n.doc && n.doc._id === session.doc._id)
+            const node = graph.data.nodes.find((n) => n.doc && n.doc._id === session.doc._id)
             if (node) {
               const idleFactorRange = idleTimeout
 
@@ -457,7 +411,6 @@ export function GraphTool() {
               ctx.font = `bold ${Math.round(12 / globalScale)}px sans-serif`
 
               const angle = session.angle
-              const label = truncate(labelFor(session.doc), 30)
               const radius = Math.sqrt(valueFor(node.doc, maxSize))
               const image = session.user.image
               const userColor = userColorManager.get(session.user.displayName).tints[400].hex
@@ -607,7 +560,7 @@ function getDocTypeColor(docType) {
 
   colorCache[docType] = {
     fill: color[hue][400].hex,
-    border: rgba(color.black.hex, 0.5)
+    border: rgba(color.black.hex, 0.5),
   }
 
   return colorCache[docType]
