@@ -8,7 +8,7 @@ import React from 'react'
  *   would like here, but for plugins that are to be used in more than one
  *   studio, we suggest these rules are followed
  **/
-export const GraphToolIcon = () => (
+export const GraphViewIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 46.063 46.063">
     <path
       fill="currentColor"

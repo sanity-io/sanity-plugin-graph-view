@@ -8,32 +8,23 @@ import {ForceGraph2D} from 'react-force-graph'
 import {v4 as uuidv4} from 'uuid'
 import BezierEasing from 'bezier-easing'
 import {useRouter} from 'part:@sanity/base/router'
+import pluginConfig from 'config:graph-view'
 
 import {useFetchDocuments, useListen} from './hooks'
-import styles from './GraphTool.css'
+import styles from './GraphView.css'
+import {sortBy, loadImage, sizeOf, truncate} from './utils'
 
-const QUERY = `
+const DEFAULT_QUERY = `
   *[
     !(_id in path("_.*")) &&
     !(_type match "system.*") &&
-    !(_type match "mux.*") &&
-    !(_type match "workflow.*") &&
-    _type != "feedback" &&
     _type != "sanity.imageAsset"
   ]
 `
-
 const fadeEasing = BezierEasing(0, 0.9, 1, 1)
 const softEasing = BezierEasing(0.25, 0.1, 0.0, 1.0)
+const idleTimeout = 10000
 const imageSize = 40
-
-function sortBy(array, f) {
-  return array.sort((a, b) => {
-    const va = f(a)
-    const vb = f(b)
-    return va < vb ? -1 : va > vb ? 1 : 0
-  })
-}
 
 function getTopDocTypes(counts) {
   return sortBy(Object.keys(counts), (docType) => counts[docType] || 0)
@@ -54,13 +45,6 @@ function getDocTypeCounts(docs) {
     types[doc._type] = (types[doc._type] || 0) + 1
   }
   return types
-}
-
-function truncate(s, limit) {
-  if (s.length > limit) {
-    s = s.substring(0, limit) + '…'
-  }
-  return s
 }
 
 function labelFor(doc) {
@@ -87,40 +71,6 @@ function findRefs(obj, dest = []) {
     }
   }
   return dest
-}
-
-function sizeOf(value) {
-  if (value == null) {
-    return 0
-  }
-
-  if (typeof value === 'object') {
-    return Object.entries(value).reduce((total, [k, v]) => total + sizeOf(k) + sizeOf(v), 0)
-  }
-
-  if (Array.isArray(value)) {
-    return Object.entries(value).reduce((total, v) => total + sizeOf(v), 0)
-  }
-
-  if (typeof value === 'string') {
-    return value.length
-  }
-
-  return 1
-}
-
-function loadImage(url) {
-  return new Promise((resolve) => {
-    let img = new Image(imageSize, imageSize)
-    img.onload = () => {
-      resolve(img)
-    }
-    img.onerror = (event) => {
-      console.log('Image error', event)
-      resolve(null)
-    }
-    img.src = url
-  })
 }
 
 function stripDraftId(id) {
@@ -150,65 +100,19 @@ class Users {
     let user = this._users.find((u) => u._id === id)
     if (!user) {
       user = await client.users.getById(id)
-
-      if (/\(Robot\)$/.test(user.displayName)) {
-        user = robotUsers[Date.now() % robotUsers.length]
-      }
-
       this._users.push(user)
-
       user.image = await loadImage(
         user.imageUrl ||
-          'https://concernedchristianmen.org/wp-content/uploads/2016/11/head-silhouette.jpg'
+          'https://raw.githubusercontent.com/sanity-io/sanity-plugin-graph-view/main/assets/head-silhouette.jpg',
+        imageSize,
+        imageSize
       )
     }
     return user
   }
 }
 
-const users = new Users()
-
-const idleTimeout = 10000
-
-const robotUsers = [
-  {
-    displayName: 'Ole',
-    imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/a7e0a0a03a59cccfd06d3bcdb5df71b75401bd28-1024x1024.png?w=80&h=80&fit=crop',
-  },
-  {
-    displayName: 'Jan-Tore',
-    imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/a79906968185c6e8a3658bcca42a79433222cc3e-1024x1024.png?w=80&h=80&fit=crop',
-  },
-  {
-    displayName: 'Stein',
-    imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/e579ed13f214ccc1e158ed42f46a30935afeb9e0-1024x1024.png?w=80&h=80&fit=crop',
-  },
-  {
-    displayName: 'Elvis',
-    imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/be36eb26194cb3ae3e218b1cf01d7c6c3425cf65-1024x1024.png?w=80&h=80&fit=crop',
-  },
-  {
-    displayName: 'Amanda',
-    imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/88e1da4f85f95856c9736aa4637e2bbf48ed6773-1024x1024.png?w=80&h=80&fit=crop',
-  },
-  {
-    displayName: 'Reidun',
-    imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/a79906968185c6e8a3658bcca42a79433222cc3e-1024x1024.png?w=80&h=80&fit=crop',
-  },
-  {
-    displayName: 'Tina',
-    imageUrl:
-      'https://cdn.sanity.io/images/ze41ydzg/production/6f6df5d7cc72f13988ad05ee026b567985bf1cf2-1024x1024.png?w=80&h=80&fit=crop',
-  },
-]
-
-class EditSession {
+class Session {
   user = null
   doc = null
   lastActive = null
@@ -231,10 +135,10 @@ class GraphData {
     }
   }
 
-  setEditSession(user, docNode) {
+  setSession(user, docNode) {
     let session = this.sessions.find((s) => s.user.id === user.id && s.doc._id === docNode.doc._id)
     if (!session) {
-      session = new EditSession()
+      session = new Session()
       session.id = uuidv4()
       session.user = user
       session.startTime = Date.now()
@@ -266,7 +170,11 @@ class GraphData {
   }
 }
 
-export function GraphTool() {
+const users = new Users()
+
+export function GraphView() {
+  const query = pluginConfig.query || DEFAULT_QUERY
+
   const userColorManager = useUserColorManager()
   const [maxSize, setMaxSize] = useState(0)
   const [hoverNode, setHoverNode] = useState(null)
@@ -285,8 +193,6 @@ export function GraphTool() {
 
   const listenCallback = useCallback(
     async (update) => {
-      console.log('Update:', update)
-
       const doc = update.result
       if (doc) {
         doc._id = stripDraftId(doc._id)
@@ -310,15 +216,14 @@ export function GraphTool() {
         setMaxSize(Math.max(...docs.map(sizeOf)))
 
         const newGraph = graph.clone()
-        let graphChanged = false
 
         const oldRefs = findRefs(oldDoc || {}).filter(
           (id) => id === doc._id || docsById[id] != null
         )
         const newRefs = findRefs(doc).filter((id) => id === doc._id || docsById[id] != null)
 
-        if (!deepEqual(oldRefs, newRefs)) {
-          graphChanged = true
+        let graphChanged = !deepEqual(oldRefs, newRefs)
+        if (graphChanged) {
           newGraph.data.links = newGraph.data.links
             .filter((l) => l.source.id !== doc._id)
             .concat(newRefs.map((ref) => ({source: doc._id, target: ref})))
@@ -339,7 +244,7 @@ export function GraphTool() {
         }
 
         const user = await users.getById(update.identity)
-        graph.setEditSession(user, docNode)
+        graph.setSession(user, docNode)
       } else if (update.transition === 'disappear') {
         const docId = stripDraftId(update.documentId)
 
@@ -358,14 +263,10 @@ export function GraphTool() {
     },
     [documents, graph]
   )
-
-  useFetchDocuments(QUERY, fetchCallback, [])
-  useListen(QUERY, {}, {}, listenCallback, [documents, graph])
-
+  useFetchDocuments(query, fetchCallback, [])
+  useListen(query, {}, {}, listenCallback, [documents, graph])
   useEffect(() => {
-    const interval = setInterval(() => {
-      graph.reapSessions()
-    }, 1000)
+    const interval = setInterval(() => graph.reapSessions(), 1000)
     return () => clearInterval(interval)
   }, [graph])
 
@@ -403,13 +304,6 @@ export function GraphTool() {
             const node = graph.data.nodes.find((n) => n.doc && n.doc._id === session.doc._id)
             if (node) {
               const idleFactorRange = idleTimeout
-
-              ctx.save()
-              ctx.globalAlpha = fadeEasing(
-                1 - Math.min(idleFactorRange, Date.now() - session.lastActive) / idleFactorRange
-              )
-              ctx.font = `bold ${Math.round(12 / globalScale)}px sans-serif`
-
               const angle = session.angle
               const radius = Math.sqrt(valueFor(node.doc, maxSize))
               const image = session.user.image
@@ -417,78 +311,88 @@ export function GraphTool() {
               const distance = radius * globalScale + 40
               const imgW = image ? image.width : 0
               const imgH = image ? image.height : 0
-
               const x = node.x + (Math.sin(angle) * distance) / globalScale
               const y = node.y + (Math.cos(angle) * distance) / globalScale
 
-              ctx.beginPath()
-              ctx.strokeStyle = rgba(color.white.hex, 1.0)
-              ctx.lineWidth = 2 / globalScale
-              ctx.moveTo(
-                node.x + (Math.sin(angle) * (distance - imgW / 2)) / globalScale,
-                node.y + (Math.cos(angle) * (distance - imgH / 2)) / globalScale
-              )
-              ctx.lineTo(node.x + Math.sin(angle) * radius, node.y + Math.cos(angle) * radius)
-              ctx.stroke()
+              ctx.save()
+              try {
+                ctx.globalAlpha = fadeEasing(
+                  1 - Math.min(idleFactorRange, Date.now() - session.lastActive) / idleFactorRange
+                )
+                ctx.font = `bold ${Math.round(12 / globalScale)}px sans-serif`
 
-              ctx.beginPath()
-              ctx.strokeStyle = rgba(color.white.hex, 1.0)
-              ctx.lineWidth = 2 / globalScale
-              ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false)
-              ctx.stroke()
+                ctx.beginPath()
+                ctx.strokeStyle = rgba(color.white.hex, 1.0)
+                ctx.lineWidth = 2 / globalScale
+                ctx.moveTo(
+                  node.x + (Math.sin(angle) * (distance - imgW / 2)) / globalScale,
+                  node.y + (Math.cos(angle) * (distance - imgH / 2)) / globalScale
+                )
+                ctx.lineTo(node.x + Math.sin(angle) * radius, node.y + Math.cos(angle) * radius)
+                ctx.stroke()
 
-              if (image) {
-                ctx.save()
+                ctx.beginPath()
+                ctx.strokeStyle = rgba(color.white.hex, 1.0)
+                ctx.lineWidth = 2 / globalScale
+                ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false)
+                ctx.stroke()
 
-                const dur = 700
-                const f = softEasing(Math.max(0, (dur - (Date.now() - session.startTime)) / dur))
-                if (f > 0) {
-                  ctx.beginPath()
-                  ctx.fillStyle = rgba(userColor, f)
-                  ctx.arc(x, y, (imgW / 2 + 10) / globalScale, 0, 2 * Math.PI, false)
-                  ctx.fill()
+                if (image) {
+                  ctx.save()
+                  try {
+                    const dur = 700
+                    const f = softEasing(
+                      Math.max(0, (dur - (Date.now() - session.startTime)) / dur)
+                    )
+                    if (f > 0) {
+                      ctx.beginPath()
+                      ctx.fillStyle = rgba(userColor, f)
+                      ctx.arc(x, y, (imgW / 2 + 10) / globalScale, 0, 2 * Math.PI, false)
+                      ctx.fill()
+                    }
+
+                    ctx.beginPath()
+                    ctx.fillStyle = rgba(color.white.hex, 1.0)
+                    ctx.arc(x, y, imgW / globalScale / 2, 0, 2 * Math.PI, false)
+                    ctx.clip()
+
+                    ctx.drawImage(
+                      image,
+                      x - imgW / globalScale / 2,
+                      y - imgH / globalScale / 2,
+                      imgW / globalScale,
+                      imgH / globalScale
+                    )
+
+                    ctx.strokeStyle = color.black.hex
+                    ctx.lineWidth = 6 / globalScale
+                    ctx.stroke()
+
+                    ctx.strokeStyle = userColor
+                    ctx.lineWidth = 4 / globalScale
+                    ctx.stroke()
+                  } finally {
+                    ctx.restore()
+                  }
                 }
 
                 ctx.beginPath()
-                ctx.fillStyle = rgba(color.white.hex, 1.0)
+                ctx.strokeStyle = rgba(color.black.hex, 1)
+                ctx.lineWidth = 0.5 / globalScale
                 ctx.arc(x, y, imgW / globalScale / 2, 0, 2 * Math.PI, false)
-                ctx.clip()
-
-                ctx.drawImage(
-                  image,
-                  x - imgW / globalScale / 2,
-                  y - imgH / globalScale / 2,
-                  imgW / globalScale,
-                  imgH / globalScale
-                )
-
-                ctx.strokeStyle = color.black.hex
-                ctx.lineWidth = 6 / globalScale
                 ctx.stroke()
 
-                ctx.strokeStyle = userColor
-                ctx.lineWidth = 4 / globalScale
-                ctx.stroke()
-
+                const above = angle >= Math.PI / 2 && angle < Math.PI * 1.5
+                const textY = above
+                  ? y - (imgH / 2 + 5) / globalScale
+                  : y + (imgH / 2 + 5) / globalScale
+                ctx.fillStyle = rgba(color.white.hex, 1.0)
+                ctx.textAlign = 'center'
+                ctx.textBaseline = above ? 'bottom' : 'top'
+                ctx.fillText(session.user.displayName, x, textY)
+              } finally {
                 ctx.restore()
               }
-
-              ctx.beginPath()
-              ctx.strokeStyle = rgba(color.black.hex, 1)
-              ctx.lineWidth = 0.5 / globalScale
-              ctx.arc(x, y, imgW / globalScale / 2, 0, 2 * Math.PI, false)
-              ctx.stroke()
-
-              const above = angle >= Math.PI / 2 && angle < Math.PI * 1.5
-              const textY = above
-                ? y - (imgH / 2 + 5) / globalScale
-                : y + (imgH / 2 + 5) / globalScale
-              ctx.fillStyle = rgba(color.white.hex, 1.0)
-              ctx.textAlign = 'center'
-              ctx.textBaseline = above ? 'bottom' : 'top'
-              ctx.fillText(session.user.displayName, x, textY)
-
-              ctx.restore()
             }
           }
         }}

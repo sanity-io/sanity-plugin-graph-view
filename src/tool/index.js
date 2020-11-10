@@ -1,11 +1,11 @@
 import {route} from 'part:@sanity/base/router'
-import {GraphTool} from './GraphTool'
-import {GraphToolIcon} from './GraphToolIcon'
+import {GraphView} from './GraphView'
+import {GraphViewIcon} from './GraphViewIcon'
 
 export default {
   title: 'Graph',
   name: 'graph-your-content',
   router: route('/:selectedDocumentId'),
-  icon: GraphToolIcon,
-  component: GraphTool,
+  icon: GraphViewIcon,
+  component: GraphView,
 }

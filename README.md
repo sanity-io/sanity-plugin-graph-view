@@ -17,6 +17,24 @@ sanity install graph-view
 sanity start
 ```
 
+## Configuration
+
+Edit `./config/graph-view.json`:
+
+```json
+{
+  "query": "*[_type == 'a' || _type == 'b']"
+}
+```
+
+For references to turn into graph edges, the entire document must be fetched, but you can also selectively filter what references will be included. For example:
+
+```json
+{
+  "query": "*[_type == 'a' || _type == 'b']{ 'refs': [author._ref, publisher._ref] }"
+}
+```
+
 ## Contributing
 
 If you want to take part in developing this plugin, then look for planned features in the [list of issues](https://github.com/sanity-io/sanity-plugin-graph-view/issues) and reach out to us in the [Sanity Community](https://slack.sanity.io/).
