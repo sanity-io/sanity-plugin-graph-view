@@ -18,7 +18,7 @@ const DEFAULT_QUERY = `
   *[
     !(_id in path("_.*")) &&
     !(_type match "system.*") &&
-    _type != "sanity.imageAsset"
+    !(_type match "sanity.*")
   ]
 `
 const fadeEasing = BezierEasing(0, 0.9, 1, 1)
