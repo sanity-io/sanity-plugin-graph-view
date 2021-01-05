@@ -7,6 +7,7 @@ import client from 'part:@sanity/base/client'
 import {ForceGraph2D} from 'react-force-graph'
 import {v4 as uuidv4} from 'uuid'
 import BezierEasing from 'bezier-easing'
+import delve from 'dlv'
 import {useRouter} from 'part:@sanity/base/router'
 import pluginConfig from 'config:graph-view'
 
@@ -48,7 +49,11 @@ function getDocTypeCounts(docs) {
 }
 
 function labelFor(doc) {
-  return `${doc.title || doc.name || doc._id}`.trim()
+  const typeLabel = pluginConfig.labels[doc._type]
+  const fallback = doc.title || doc.name || doc._id
+  const label = typeLabel ? delve(doc, typeLabel, fallback) : fallback
+
+  return `${label}`.trim()
 }
 
 function valueFor(doc, maxSize) {

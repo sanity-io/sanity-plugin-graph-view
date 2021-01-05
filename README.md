@@ -5,7 +5,7 @@
   <p><img src="assets/screengrab.gif" width="540" alt="Screengrab of the Graph tool" /></p>
 </div>
 
-Wonder how a visualization of your dataset will look? How many authors do you have? How many items have they worked on? And are currently working on! Edits and changes are shown in real-time!
+Wonder how the visualization of your dataset will look? How many authors do you have? How many items have they worked on? And are currently working on! Edits and changes are shown in real-time!
 
 **Explore your data with this plugin, seek out strange corners and data types, boldly go where you could not before!**
 
@@ -26,6 +26,24 @@ Edit `./config/graph-view.json`:
   "query": "*[_type == 'a' || _type == 'b']"
 }
 ```
+
+### Labels
+
+By default, the plugin uses `doc.title || doc.name || doc._id` as the node label.
+
+You can configure labels by passing a key-value object:
+
+```json
+{
+  "query": "*[_type == 'a' || _type == 'b']",
+  "labels": {
+    "a": "someProperty",
+    "b": "anotherProperty",
+  }
+}
+```
+
+### References
 
 For references to turn into graph edges, the entire document must be fetched, but you can also selectively filter what references will be included. For example:
 
