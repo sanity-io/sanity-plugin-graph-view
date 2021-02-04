@@ -31,7 +31,7 @@ For references to turn into graph edges, the entire document must be fetched, bu
 
 ```json
 {
-  "query": "*[_type == 'a' || _type == 'b']{ 'refs': [author._ref, publisher._ref] }"
+  "query": "*[_type == 'a' || _type == 'b']{ 'refs': [author, publisher] }"
 }
 ```
 
