@@ -23,7 +23,7 @@ Edit `./config/graph-view.json`:
 
 ```json
 {
-  "query": "*[_type == 'a' || _type == 'b']"
+  "query": "*[_type in ['a', 'b']]"
 }
 ```
 
@@ -31,7 +31,17 @@ For references to turn into graph edges, the entire document must be fetched, bu
 
 ```json
 {
-  "query": "*[_type == 'a' || _type == 'b']{ 'refs': [author, publisher] }"
+  "query": "*[_type in ['a', 'b']]{ 'refs': [author, publisher] }"
+}
+```
+
+By default, the plugin uses `doc.title || doc.name || doc._id` as the node label.
+
+If you want to use another property, compute a `title` property in your query, e.g.:
+
+```json
+{
+  "query": "*[_type in ['a', 'b']] { ..., \"title\": select(_type == 'a' => 'Title A', _type == 'b' => 'Title B') }"
 }
 ```
 
