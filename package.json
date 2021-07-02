@@ -39,6 +39,9 @@
     "@sanity/base": ">= 1.150.x",
     "@sanity/client": ">= 1.150.x"
   },
+  "resolutions": {
+    "**/three": "0.119.1"
+  },
   "bugs": {
     "url": "https://github.com/sanity-io/sanity-plugin-graph-view/issues"
   },

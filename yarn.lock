@@ -4811,7 +4811,7 @@ three-render-objects@^1.24.4:
     kapsule "^1.13.3"
     polished "^3.6.6"
 
-three@^0.119.1:
+three@0.119.1, three@^0.119.1:
   version "0.119.1"
   resolved "https://registry.yarnpkg.com/three/-/three-0.119.1.tgz#9d979a082c4cd9622af8e3498a8dfa026a619332"
   integrity sha512-GHyh/RiUfQ5VTiWIVRRTANYoXc1PFB1y+jDVRTb649nif1uX1F06PT1TKU3k2+F/MN4UJ3PWvQB53fY2OqKqKw==
