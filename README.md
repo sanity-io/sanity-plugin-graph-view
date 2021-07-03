@@ -11,7 +11,16 @@ Wonder how a visualization of your dataset will look? How many authors do you ha
 
 ## Installation and use
 
-**Important!** Due to an [outstanding issue with Three.js](https://github.com/sanity-io/sanity-plugin-graph-view/issues/4), you currently **have to use Yarn to install packages, not NPM**.
+<div style="padding: 1em; border: solid 2px red;">
+**Important!** Due to an [outstanding issue with Three.js](https://github.com/sanity-io/sanity-plugin-graph-view/issues/4), you currently **have to use Yarn to install packages, not NPM, and add this to your app's `package.json`**:
+
+```json
+  "resolutions": {
+    "**/three": "0.119.1"
+  }
+```
+We hope to remedy this in the future.
+</div>
 
 ```sh
 # In your Sanity Studio repository:
