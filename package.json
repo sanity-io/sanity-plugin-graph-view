@@ -1,49 +1,83 @@
 {
   "name": "sanity-plugin-graph-view",
-  "version": "1.0.7",
-  "main": "package.json",
+  "version": "3.0.0-v3-studio.0",
   "author": "Sanity.io <hello@sanity.io>",
   "license": "MIT",
   "scripts": {
-    "build": "babel src -d lib --copy-files",
+    "clean": "rimraf lib",
+    "prebuild": "npm run clean && plugin-kit verify-package --silent",
+    "build": "parcel build --no-cache",
+    "watch": "parcel watch",
+    "link-watch": "plugin-kit link-watch",
+    "compile": "tsc --noEmit",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier src -w",
+    "prepare": "husky install",
     "prepublishOnly": "npm run build"
   },
+  "source": "./src/index.tsx",
+  "exports": {
+    ".": {
+      "require": "./lib/index.js",
+      "default": "./lib/index.modern.js"
+    }
+  },
+  "main": "./lib/index.js",
+  "module": "./lib/index.modern.js",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "src",
+    "lib"
+  ],
   "dependencies": {
-    "@sanity/color": "^1.0.0",
+    "@sanity/client": "^3.3.0",
+    "@sanity/color": "^2.1.10",
+    "@sanity/incompatible-plugin": "^0.0.1-studio-v3.3",
+    "@sanity/ui": "^0.37.9",
     "bezier-easing": "^2.1.0",
-    "deep-equal": "^2.0.4",
-    "polished": "^4.0.1",
-    "react-force-graph": "^1.37.0",
-    "uuid": "^8.3.1"
+    "deep-equal": "^2.0.5",
+    "polished": "^4.2.2",
+    "react-force-graph": "^1.41.12",
+    "styled-components": "^5.3.5",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.11.6",
-    "@babel/core": "^7.11.6",
-    "@babel/plugin-proposal-class-properties": "^7.10.4",
-    "@babel/plugin-transform-runtime": "^7.11.5",
-    "@babel/preset-env": "^7.11.5",
-    "@babel/preset-react": "^7.10.4",
-    "@babel/runtime": "^7.11.2",
-    "@sanity/base": "1.150.9-review-changes.1024",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^7.10.0",
-    "eslint-config-prettier": "^6.12.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "eslint-plugin-react": "^7.21.3",
-    "eslint-plugin-react-hooks": "^4.1.2",
-    "prettier": "^2.1.2",
-    "react": "^16.13.1"
+    "@commitlint/cli": "^16.1.0",
+    "@commitlint/config-conventional": "^15.0.0",
+    "@parcel/packager-ts": "^2.6.0",
+    "@parcel/transformer-typescript-types": "^2.6.0",
+    "@sanity/plugin-kit": "^0.0.1-studio-v3.4",
+    "@types/deep-equal": "^1.0.1",
+    "@types/react": "^17.0.0 || ^18.0.0",
+    "@types/styled-components": "^5.1.25",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.14.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-sanity": "^5.1.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "eslint-plugin-react": "^7.29.4",
+    "eslint-plugin-react-hooks": "^4.5.0",
+    "husky": "^7.0.0",
+    "lint-staged": "^12.4.1",
+    "parcel": "^2.6.0",
+    "prettier": "^2.6.2",
+    "react": "^17.0.0 || ^18.0.0",
+    "rimraf": "^3.0.2",
+    "sanity": "^3.0.0-dev-preview.7",
+    "typescript": "^4.6.3"
   },
   "peerDependencies": {
-    "@sanity/base": ">= 1.150.x",
-    "@sanity/client": ">= 1.150.x"
-  },
-  "resolutions": {
-    "**/three": "0.119.1"
+    "react": "^17.0.0 || ^18.0.0",
+    "sanity": "dev-preview"
   },
   "bugs": {
     "url": "https://github.com/sanity-io/sanity-plugin-graph-view/issues"
   },
-  "homepage": "https://github.com/sanity-io/sanity-plugin-graph-view#readme"
+  "homepage": "https://github.com/sanity-io/sanity-plugin-graph-view#readme",
+  "sanityExchangeUrl": "https://www.sanity.io/plugins/graph-view",
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }
