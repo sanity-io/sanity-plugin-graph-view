@@ -1,6 +1,5 @@
 import {useEffect} from 'react'
-import {ListenEvent, ListenOptions} from '@sanity/client'
-import {SanityClient} from 'sanity/_unstable'
+import {ListenEvent, ListenOptions, SanityClient} from '@sanity/client'
 
 // eslint-disable-next-line max-params
 export function useListen(
