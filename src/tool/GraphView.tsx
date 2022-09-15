@@ -178,10 +178,13 @@ const users = new Users()
 
 interface GraphViewConfig {
   query?: string
+  /** default: '2022-09-01' */
+  apiVersion?: string
 }
 
 export function GraphView(props: GraphViewConfig) {
   const query = props.query || DEFAULT_QUERY
+  const apiVersion = props.apiVersion ?? '2022-09-01'
 
   const userColorManager = useUserColorManager()
   const [maxSize, setMaxSize] = useState(0)
@@ -190,7 +193,7 @@ export function GraphView(props: GraphViewConfig) {
   const [docTypes, setDocTypes] = useState<Record<string, number>>({})
   const [graph, setGraph] = useState(() => new GraphData())
   const router = useRouter()
-  const client = useClient()
+  const client = useClient({apiVersion})
 
   const fetchCallback = useCallback((_docs) => {
     const docs = deduplicateDrafts(_docs)
@@ -272,8 +275,8 @@ export function GraphView(props: GraphViewConfig) {
     },
     [documents, graph, client]
   )
-  useFetchDocuments(query, fetchCallback, [])
-  useListen(query, {}, {}, listenCallback, [documents, graph])
+  useFetchDocuments(query, fetchCallback, [], client)
+  useListen(query, {}, {}, listenCallback, [documents, graph], client)
   useEffect(() => {
     const interval = setInterval(() => graph.reapSessions(), 1000)
     return () => clearInterval(interval)

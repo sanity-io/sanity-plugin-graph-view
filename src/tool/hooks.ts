@@ -1,15 +1,16 @@
 import {useEffect} from 'react'
-import {useClient} from 'sanity'
 import {ListenEvent, ListenOptions} from '@sanity/client'
+import {SanityClient} from 'sanity/_unstable'
 
+// eslint-disable-next-line max-params
 export function useListen(
   query: string,
   params: {[key: string]: any},
   options: ListenOptions,
   onUpdate: (event: ListenEvent<any>) => void,
-  dependencies: unknown[]
+  dependencies: unknown[],
+  client: SanityClient
 ): void {
-  const client = useClient()
   useEffect(() => {
     const subscription = client.listen(query, params, options).subscribe((update) => {
       onUpdate(update)
@@ -17,18 +18,20 @@ export function useListen(
     return () => {
       subscription.unsubscribe()
     }
-  }, dependencies)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...dependencies, client])
 }
 
 export function useFetchDocuments(
   query: string,
   onFetch: (event: ListenEvent<any>) => void,
-  dependencies: unknown[]
+  dependencies: unknown[],
+  client: SanityClient
 ): void {
-  const client = useClient()
   useEffect(() => {
     client.fetch(query).then((result) => {
       onFetch(result)
     })
-  }, dependencies)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...dependencies, client])
 }

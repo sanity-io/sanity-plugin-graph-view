@@ -60,7 +60,8 @@ export default createConfig({
   // ...
   plugins: [
     contentGraphView({
-      "query": "*[_type in ['a', 'b']]"
+      "query": "*[_type in ['a', 'b']]",
+      apiVersion: "2022-09-01" // optional, default shown
     }),
   ] 
 })
