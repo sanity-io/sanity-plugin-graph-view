@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0-v3-studio.3](https://github.com/sanity-io/sanity-plugin-graph-view/compare/v3.0.0-v3-studio.2...v3.0.0-v3-studio.3) (2022-09-15)
+
+### Bug Fixes
+
+- use new useClient api ([9de6553](https://github.com/sanity-io/sanity-plugin-graph-view/commit/9de65534e88f9623a7c588e5a25cb8321feb5cbb))
+
 ## [3.0.0-v3-studio.2](https://github.com/sanity-io/sanity-plugin-graph-view/compare/v3.0.0-v3-studio.1...v3.0.0-v3-studio.2) (2022-09-14)
 
 ### Bug Fixes
