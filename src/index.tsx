@@ -1,6 +1,7 @@
 import {GraphView} from './tool/GraphView'
 import {GraphViewIcon} from './tool/GraphViewIcon'
-import {createPlugin, route} from 'sanity'
+import {createPlugin} from 'sanity'
+import {route} from 'sanity/router'
 import React from 'react'
 
 interface GraphViewConfig {
