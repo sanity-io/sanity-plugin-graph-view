@@ -1,6 +1,6 @@
 {
   "name": "sanity-plugin-graph-view",
-  "version": "3.0.0-v3-studio.4",
+  "version": "3.0.0-v3-studio.5",
   "author": "Sanity.io <hello@sanity.io>",
   "license": "MIT",
   "scripts": {

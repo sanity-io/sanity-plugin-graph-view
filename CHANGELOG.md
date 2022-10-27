@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0-v3-studio.5](https://github.com/sanity-io/sanity-plugin-graph-view/compare/v3.0.0-v3-studio.4...v3.0.0-v3-studio.5) (2022-10-27)
+
+### Bug Fixes
+
+- **deps:** dev-preview.22 ([4c70cf3](https://github.com/sanity-io/sanity-plugin-graph-view/commit/4c70cf3944d4e80554697183aeae8186625a44b1))
+
 ## [3.0.0-v3-studio.4](https://github.com/sanity-io/sanity-plugin-graph-view/compare/v3.0.0-v3-studio.3...v3.0.0-v3-studio.4) (2022-10-07)
 
 ### Bug Fixes
