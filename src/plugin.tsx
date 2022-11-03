@@ -1,14 +1,14 @@
 import {GraphView} from './tool/GraphView'
 import {GraphViewIcon} from './tool/GraphViewIcon'
-import {createPlugin} from 'sanity'
+import {definePlugin} from 'sanity'
 import {route} from 'sanity/router'
 import React from 'react'
 
-interface GraphViewConfig {
+export interface GraphViewConfig {
   query?: string
 }
 
-export const contentGraphView = createPlugin<GraphViewConfig>((config: GraphViewConfig = {}) => {
+export const contentGraphView = definePlugin<GraphViewConfig>((config: GraphViewConfig = {}) => {
   return {
     name: '@sanity/content-graph-view',
 

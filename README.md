@@ -15,14 +15,17 @@ Wonder how a visualization of your dataset will look? How many authors do you ha
 
 **Explore your data with this plugin, seek out strange corners and data types, boldly go where you could not before!**
 
-## Installation 
+## Installation
 
-
-`npm install --save sanity-plugin-graph-view@studio-v3`
+```
+npm install --save sanity-plugin-graph-view@studio-v3
+```
 
 or
 
-`yarn add sanity-plugin-graph-view@studio-v3`
+```
+yarn add sanity-plugin-graph-view@studio-v3
+```
 
 
 ## Usage
@@ -32,7 +35,7 @@ Add it as a plugin in sanity.config.ts (or .js):
 ```js
 import { contentGraphView } from "sanity-plugin-graph-view";
 
-export default createConfig({
+export default defineConfigConfig({
   // ...
   plugins: [
     contentGraphView({}),
@@ -56,7 +59,7 @@ You can control which documents appear in the graph by providing a query:
 ```js
 import { contentGraphView } from "sanity-plugin-graph-view";
 
-export default createConfig({
+export default defineConfig({
   // ...
   plugins: [
     contentGraphView({
@@ -95,7 +98,7 @@ Join [Sanity’s developer community](https://slack.sanity.io) or ping us [on tw
 
 ## License
 
-MIT © [Sanity.io](https://www.sanity.io/)
+MIT-licensed. See LICENSE.
 
 ## Develop & test
 

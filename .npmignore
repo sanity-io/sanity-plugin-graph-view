@@ -1,1 +1,9 @@
-/src
+/test
+/coverage
+.editorconfig
+.eslintrc
+.gitignore
+.github
+.prettierrc
+.travis.yml
+.nyc_output
