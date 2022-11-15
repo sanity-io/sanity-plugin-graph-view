@@ -1,49 +1,94 @@
 {
   "name": "sanity-plugin-graph-view",
-  "version": "1.0.7",
-  "main": "package.json",
-  "author": "Sanity.io <hello@sanity.io>",
-  "license": "MIT",
-  "scripts": {
-    "build": "babel src -d lib --copy-files",
-    "lint": "eslint .",
-    "prepublishOnly": "npm run build"
-  },
-  "dependencies": {
-    "@sanity/color": "^1.0.0",
-    "bezier-easing": "^2.1.0",
-    "deep-equal": "^2.0.4",
-    "polished": "^4.0.1",
-    "react-force-graph": "^1.37.0",
-    "uuid": "^8.3.1"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.11.6",
-    "@babel/core": "^7.11.6",
-    "@babel/plugin-proposal-class-properties": "^7.10.4",
-    "@babel/plugin-transform-runtime": "^7.11.5",
-    "@babel/preset-env": "^7.11.5",
-    "@babel/preset-react": "^7.10.4",
-    "@babel/runtime": "^7.11.2",
-    "@sanity/base": "1.150.9-review-changes.1024",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^7.10.0",
-    "eslint-config-prettier": "^6.12.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "eslint-plugin-react": "^7.21.3",
-    "eslint-plugin-react-hooks": "^4.1.2",
-    "prettier": "^2.1.2",
-    "react": "^16.13.1"
-  },
-  "peerDependencies": {
-    "@sanity/base": ">= 1.150.x",
-    "@sanity/client": ">= 1.150.x"
-  },
-  "resolutions": {
-    "**/three": "0.119.1"
-  },
+  "version": "3.0.0-v3-studio.7",
+  "description": "",
+  "homepage": "https://github.com/sanity-io/sanity-plugin-graph-view#readme",
   "bugs": {
     "url": "https://github.com/sanity-io/sanity-plugin-graph-view/issues"
   },
-  "homepage": "https://github.com/sanity-io/sanity-plugin-graph-view#readme"
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:sanity-io/sanity-plugin-graph-view.git"
+  },
+  "license": "MIT",
+  "author": "Sanity.io <hello@sanity.io>",
+  "exports": {
+    ".": {
+      "types": "./lib/src/index.d.ts",
+      "source": "./src/index.ts",
+      "import": "./lib/index.esm.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.esm.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./lib/index.js",
+  "module": "./lib/index.esm.js",
+  "source": "./src/index.ts",
+  "types": "./lib/src/index.d.ts",
+  "files": [
+    "src",
+    "lib",
+    "v2-incompatible.js",
+    "sanity.json"
+  ],
+  "scripts": {
+    "prebuild": "npm run clean && plugin-kit verify-package --silent && pkg-utils",
+    "build": "pkg-utils build --strict",
+    "clean": "rimraf lib",
+    "compile": "tsc --noEmit",
+    "format": "prettier src -w",
+    "link-watch": "plugin-kit link-watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky install",
+    "prepublishOnly": "npm run build",
+    "watch": "pkg-utils watch"
+  },
+  "dependencies": {
+    "@sanity/client": "^3.3.0",
+    "@sanity/color": "^2.1.10",
+    "@sanity/incompatible-plugin": "^1.0.4",
+    "@sanity/ui": "1.0.0-beta.32",
+    "bezier-easing": "^2.1.0",
+    "deep-equal": "^2.0.5",
+    "polished": "^4.2.2",
+    "react-force-graph": "^1.41.12",
+    "styled-components": "^5.3.5",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.2.0",
+    "@commitlint/config-conventional": "^17.2.0",
+    "@sanity/pkg-utils": "^1.17.2",
+    "@sanity/plugin-kit": "^2.1.6",
+    "@sanity/semantic-release-preset": "^2.0.2",
+    "@types/deep-equal": "^1.0.1",
+    "@types/react": "^18",
+    "@types/styled-components": "^5.1.25",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "eslint": "^8.26.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-sanity": "^6.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.31.10",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "prettier-plugin-packagejson": "^2.3.0",
+    "react": "^18",
+    "rimraf": "^3.0.2",
+    "sanity": "3.0.0-rc.0",
+    "typescript": "^4.8.4"
+  },
+  "peerDependencies": {
+    "react": "^18",
+    "sanity": "dev-preview || 3.0.0-rc.0"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "sanityExchangeUrl": "https://www.sanity.io/plugins/graph-view"
 }
