@@ -5,6 +5,8 @@
   <p><img src="assets/screengrab.gif" width="540" alt="Screengrab of the Graph tool" /></p>
 </div>
 
+> This is a Sanity Studio v2 plugin. For the v3 version, please refer to the [v3-branch](https://github.com/sanity-io/sanity-plugin-graph-view).
+
 Wonder how a visualization of your dataset will look? How many authors do you have? How many items have they worked on? And are currently working on! Edits and changes are shown in real-time!
 
 **Explore your data with this plugin, seek out strange corners and data types, boldly go where you could not before!**
@@ -24,7 +26,7 @@ We hope to remedy this in the future.
 
 ```sh
 # In your Sanity Studio repository:
-sanity install graph-view
+sanity install graph-view@studio-v2 
 
 # Start the Studio
 sanity start
