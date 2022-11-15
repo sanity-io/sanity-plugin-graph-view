@@ -1,15 +1,12 @@
-> **NOTE**
->
-> This is the **Sanity Studio v3 version** of sanity-plugin-graph-view.
->
-> For the v2 version, please refer to the [v2-branch](https://github.com/sanity-io/sanity-plugin-graph-view).
-
 <div align="center">
   <img src="assets/sanity-logo.png" width="177" alt="Sanity" />
   <h1>Graph View Plugin</h1>
   <p>A tool for Sanity Studio to graph your content and see changes in real-time.</p>
   <p><img src="assets/screengrab.gif" width="540" alt="Screengrab of the Graph tool" /></p>
 </div>
+
+> This is a **Sanity Studio v3** plugin.
+> For the v2 version, please refer to the [v2-branch](https://github.com/sanity-io/sanity-plugin-graph-view/tree/studio-v2).
 
 Wonder how a visualization of your dataset will look? How many authors do you have? How many items have they worked on? And are currently working on! Edits and changes are shown in real-time!
 
@@ -18,13 +15,13 @@ Wonder how a visualization of your dataset will look? How many authors do you ha
 ## Installation
 
 ```
-npm install --save sanity-plugin-graph-view@studio-v3
+npm install --save sanity-plugin-graph-view
 ```
 
 or
 
 ```
-yarn add sanity-plugin-graph-view@studio-v3
+yarn add sanity-plugin-graph-view
 ```
 
 
