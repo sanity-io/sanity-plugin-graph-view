@@ -1,6 +1,6 @@
 {
   "name": "sanity-plugin-graph-view",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "homepage": "https://github.com/sanity-io/sanity-plugin-graph-view#readme",
   "bugs": {
     "url": "https://github.com/sanity-io/sanity-plugin-graph-view/issues"
