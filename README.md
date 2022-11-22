@@ -24,12 +24,16 @@ Wonder how a visualization of your dataset will look? How many authors do you ha
 We hope to remedy this in the future.
 </div>
 
-```sh
-# In your Sanity Studio repository:
-sanity install graph-view@studio-v2 
 
-# Start the Studio
-sanity start
+```sh
+yarn add sanity-plugin-graph-view@studio-v2
+```
+
+Next, add `"graph-view"` to `sanity.json` plugins array:
+```json
+"plugins": [
+  "graph-view"
+]
 ```
 
 ## Configuration
