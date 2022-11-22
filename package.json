@@ -1,13 +1,20 @@
 {
   "name": "sanity-plugin-graph-view",
   "version": "1.0.7",
-  "main": "package.json",
-  "author": "Sanity.io <hello@sanity.io>",
+  "homepage": "https://github.com/sanity-io/sanity-plugin-graph-view#readme",
+  "bugs": {
+    "url": "https://github.com/sanity-io/sanity-plugin-graph-view/issues"
+  },
   "license": "MIT",
+  "author": "Sanity.io <hello@sanity.io>",
+  "main": "package.json",
   "scripts": {
     "build": "babel src -d lib --copy-files",
     "lint": "eslint .",
     "prepublishOnly": "npm run build"
+  },
+  "resolutions": {
+    "**/three": "0.119.1"
   },
   "dependencies": {
     "@sanity/color": "^1.0.0",
@@ -25,7 +32,10 @@
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-react": "^7.10.4",
     "@babel/runtime": "^7.11.2",
+    "@commitlint/cli": "^17.2.0",
+    "@commitlint/config-conventional": "^17.2.0",
     "@sanity/base": "1.150.9-review-changes.1024",
+    "@sanity/semantic-release-preset": "^2.0.2",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.10.0",
     "eslint-config-prettier": "^6.12.0",
@@ -38,12 +48,5 @@
   "peerDependencies": {
     "@sanity/base": ">= 1.150.x",
     "@sanity/client": ">= 1.150.x"
-  },
-  "resolutions": {
-    "**/three": "0.119.1"
-  },
-  "bugs": {
-    "url": "https://github.com/sanity-io/sanity-plugin-graph-view/issues"
-  },
-  "homepage": "https://github.com/sanity-io/sanity-plugin-graph-view#readme"
+  }
 }
