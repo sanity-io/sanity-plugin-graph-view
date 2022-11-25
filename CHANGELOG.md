@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/sanity-io/sanity-plugin-graph-view/compare/v2.0.0...v2.0.1) (2022-11-25)
+
+### Bug Fixes
+
+- **deps:** sanity ^3.0.0 (works with rc.3) ([3d8a90d](https://github.com/sanity-io/sanity-plugin-graph-view/commit/3d8a90d899c18dfbd87ae59ffff63c9f30f9a41f))
+
 ## [2.0.0](https://github.com/sanity-io/sanity-plugin-graph-view/compare/v1.0.7...v2.0.0) (2022-11-15)
 
 ### ⚠ BREAKING CHANGES
